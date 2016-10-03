@@ -20,6 +20,17 @@ def examine():
         err("could not get data from '{}', status code {}".format(MON_URL, req.status_code))
         return
     rawData = req.json()
+    #log(json.dumps(rawData, sort_keys=True, indent=2, separators=(',', ': ')))
+    # Getting free intervals
+    date2freeIntervals = {}
+    for dateData in rawData["planning"]:
+        if dateData['freeIntervalCount']:
+            freeIntervals = []
+            for interval in dateData['intervals']:
+                if interval['free']:
+                    freeIntervals.append(interval['formattedDate'])
+            date2freeIntervals[dateData['date']] = freeIntervals
+    log(date2freeIntervals)
 
 
 if __name__ == '__main__':
