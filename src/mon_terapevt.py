@@ -10,20 +10,20 @@ from mylogging import log, err, info
 #======================================
 # Constants
 
-MY_DEBUG = True
+MY_DEBUG = False
 
-MON_INTERVAL = 10 # in sec
+MON_INTERVAL = 15 * 60 # in sec
 if MY_DEBUG:
     MON_URL = 'http://localhost:3000/db.json'
 else:
-    MON_URL = 'https://sarov.r-mis.ru/pp/group/department_295/service/61/resource/161/planning/2016/10?_salt=1475064375273'
+    MON_URL = 'https://sarov.r-mis.ru/pp/group/department_298/service/27/resource/183/planning/2016/10?_salt=1475503090305'
 PREV_DATA_FNAME = join(dirname(abspath(__file__)), "prev_data.json")
 
 # Email settings
 EMAIL_USER = "alexey.a.zakharov@gmail.com"
 EMAIL_PWD = "MyGmail6"
 EMAIL_TO = "zangular@yandex.ru"
-EMAIL_SUBJ = "запись к терапевту"
+EMAIL_SUBJ = "запись к детскому кардиологу"
 
 #======================================
 
