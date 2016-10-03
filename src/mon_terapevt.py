@@ -18,6 +18,18 @@ else:
 
 #======================================
 
+def extractData(rawData):
+    date2freeIntervals = {}
+    for dateData in rawData["planning"]:
+        if dateData['freeIntervalCount']:
+            freeIntervals = []
+            for interval in dateData['intervals']:
+                if interval['free']:
+                    freeIntervals.append(interval['formattedDate'])
+            date2freeIntervals[dateData['date']] = freeIntervals
+    return date2freeIntervals
+
+
 def examine():
     # Request data
     req = requests.get(MON_URL, verify=False) # don't verify SSL cert
@@ -27,14 +39,7 @@ def examine():
     rawData = req.json()
     #log(json.dumps(rawData, sort_keys=True, indent=2, separators=(',', ': ')))
     # Getting free intervals
-    date2freeIntervals = {}
-    for dateData in rawData["planning"]:
-        if dateData['freeIntervalCount']:
-            freeIntervals = []
-            for interval in dateData['intervals']:
-                if interval['free']:
-                    freeIntervals.append(interval['formattedDate'])
-            date2freeIntervals[dateData['date']] = freeIntervals
+    date2freeIntervals = extractData(rawData)
     log(date2freeIntervals)
 
 
