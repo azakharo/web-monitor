@@ -8,8 +8,13 @@ from mylogging import log, err
 #======================================
 # Constants
 
+MY_DEBUG = True
+
 MON_INTERVAL = 5 * 60 # in sec
-MON_URL = 'https://sarov.r-mis.ru/pp/group/department_295/service/61/resource/161/planning/2016/10?_salt=1475064375273'
+if MY_DEBUG:
+    MON_URL = 'http://localhost:3000/db.json'
+else:
+    MON_URL = 'https://sarov.r-mis.ru/pp/group/department_295/service/61/resource/161/planning/2016/10?_salt=1475064375273'
 
 #======================================
 
@@ -34,6 +39,9 @@ def examine():
 
 
 if __name__ == '__main__':
-    while True:
+    if MY_DEBUG:
         examine()
-        time.sleep(MON_INTERVAL)
+    else:
+        while True:
+            examine()
+            time.sleep(MON_INTERVAL)
