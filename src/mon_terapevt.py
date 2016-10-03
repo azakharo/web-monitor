@@ -5,19 +5,25 @@ import time
 from os.path import dirname, abspath, join, exists
 import json
 import requests
-from mylogging import log, err
+from mylogging import log, err, info
 
 #======================================
 # Constants
 
 MY_DEBUG = True
 
-MON_INTERVAL = 5 * 60 # in sec
+MON_INTERVAL = 10 # in sec
 if MY_DEBUG:
     MON_URL = 'http://localhost:3000/db.json'
 else:
     MON_URL = 'https://sarov.r-mis.ru/pp/group/department_295/service/61/resource/161/planning/2016/10?_salt=1475064375273'
 PREV_DATA_FNAME = join(dirname(abspath(__file__)), "prev_data.json")
+
+# Email settings
+EMAIL_USER = "alexey.a.zakharov@gmail.com"
+EMAIL_PWD = "MyGmail6"
+EMAIL_TO = "zangular@yandex.ru"
+EMAIL_SUBJ = "запись к терапевту"
 
 #======================================
 
@@ -44,8 +50,11 @@ def loadPrevData():
 
 def saveData(data):
     f = open(PREV_DATA_FNAME, "w")
-    f.write(json.dumps(data, sort_keys=True, indent=2, separators=(',', ': ')))
+    f.write(jsonPrettyPrintStr(data))
     f.close()
+
+def jsonPrettyPrintStr(data):
+    return json.dumps(data, sort_keys=True, indent=2, separators=(',', ': '))
 
 def examine():
     # Request data
@@ -57,22 +66,50 @@ def examine():
     #log(json.dumps(rawData, sort_keys=True, indent=2, separators=(',', ': ')))
 
     prevData = loadPrevData()
-    if prevData:
-        log("prev data:")
-        log(prevData)
 
     # Getting free intervals
     date2freeIntervals = extractData(rawData)
-    log(date2freeIntervals)
+    # log(date2freeIntervals)
+
+    # Compare the cur and prev data
+    if date2freeIntervals != prevData:
+        info('free intervals have been changed:')
+        info(jsonPrettyPrintStr(date2freeIntervals))
+        # Send email with cur state
+        msgBody = "Свободное время приёма:\n"
+        for date in date2freeIntervals.keys():
+            msgBody += "{} число: {}\n".format(date, ', '.join(date2freeIntervals[date]))
+        send_email(EMAIL_USER, EMAIL_PWD, EMAIL_TO, EMAIL_SUBJ, msgBody)
 
     # Save data
     saveData(date2freeIntervals)
 
 
+def send_email(user, pwd, recipient, subject, body):
+    import smtplib
+
+    gmail_user = user
+    gmail_pwd = pwd
+    FROM = user
+    TO = recipient if type(recipient) is list else [recipient]
+    SUBJECT = subject
+    TEXT = body
+
+    # Prepare actual message
+    message = """From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+        server.starttls()
+        server.login(gmail_user, gmail_pwd)
+        server.sendmail(FROM, TO, message)
+        server.close()
+        print 'successfully sent the mail'
+    except:
+        print "failed to send mail"
+
 if __name__ == '__main__':
-    if MY_DEBUG:
+    while True:
         examine()
-    else:
-        while True:
-            examine()
-            time.sleep(MON_INTERVAL)
+        time.sleep(MON_INTERVAL)
