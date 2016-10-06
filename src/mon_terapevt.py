@@ -77,7 +77,7 @@ def examine():
     # log(date2freeIntervals)
 
     # Compare the cur and prev data
-    if date2freeIntervals != prevData:
+    if prevData is None or date2freeIntervals != prevData:
         info('free intervals have been changed:')
         info(jsonPrettyPrintStr(date2freeIntervals))
         # Send email with cur state
