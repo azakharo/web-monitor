@@ -13,17 +13,22 @@ from mylogging import log, err, info
 MY_DEBUG = False
 
 MON_INTERVAL = 15 * 60 # in sec
+DOCTOR_NAME = 'Врач-акушер-гинеколог Скотарева И.А. (Пол-ка № 1, каб. 313)'
 if MY_DEBUG:
     MON_URL = 'http://localhost:3000/db.json'
 else:
-    MON_URL = 'https://sarov.r-mis.ru/pp/group/department_298/service/27/resource/183/planning/2016/10?_salt=1475503090305'
+    # детский кардиолог
+    #MON_URL = 'https://sarov.r-mis.ru/pp/group/department_298/service/27/resource/183/planning/2016/10?_salt=1475503090305'
+    # Врач-акушер-гинеколог Скотарева И.А. (Пол-ка № 1, каб. 313)
+    MON_URL =  'https://sarov.r-mis.ru/pp/group/department_303/service/34/resource/211/planning/2016/10?_salt=1475503090305'
 PREV_DATA_FNAME = join(dirname(abspath(__file__)), "prev_data.json")
 
 # Email settings
 EMAIL_USER = "alexey.a.zakharov@gmail.com"
 EMAIL_PWD = "MyGmail6"
-EMAIL_TO = "zangular@yandex.ru"
-EMAIL_SUBJ = "запись к детскому кардиологу"
+#EMAIL_TO = "zangular@yandex.ru"
+EMAIL_TO = "pups1912@yandex.ru"
+EMAIL_SUBJ = "запись к гинекологу"
 
 #======================================
 
@@ -76,9 +81,13 @@ def examine():
         info('free intervals have been changed:')
         info(jsonPrettyPrintStr(date2freeIntervals))
         # Send email with cur state
-        msgBody = "Свободное время приёма:\n"
-        for date in date2freeIntervals.keys():
-            msgBody += "{} число: {}\n".format(date, ', '.join(date2freeIntervals[date]))
+        msgBody = "{}\n".format(DOCTOR_NAME)
+        if len(date2freeIntervals.keys()) > 0:
+            msgBody += "Свободное время приёма:\n"
+            for date in date2freeIntervals.keys():
+                msgBody += "{} число: {}\n".format(date, ', '.join(date2freeIntervals[date]))
+        else:
+            msgBody += "Пока всё занято :("
         send_email(EMAIL_USER, EMAIL_PWD, EMAIL_TO, EMAIL_SUBJ, msgBody)
 
     # Save data
