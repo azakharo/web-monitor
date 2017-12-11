@@ -11,7 +11,7 @@ from mylogging import log, err, info
 # ======================================
 # Constants
 
-MY_DEBUG = True
+MY_DEBUG = False
 DEBUG_MON_URL = 'http://localhost:3000/db.json'
 
 MON_INTERVAL = 1 * 60  # in sec
@@ -36,7 +36,7 @@ def monitor():
   for doctorInfo in config["doctors"]:
     # Request data
     doctor = doctorInfo["name"].encode('UTF-8')
-    monUrl = doctorInfo["url"] if not MY_DEBUG else DEBUG_MON_URL
+    monUrl = doctorInfo["url"].encode('UTF-8') if not MY_DEBUG else DEBUG_MON_URL
     req = requests.get(monUrl, verify=False)  # don't verify SSL cert
     if req.status_code != 200:
       err("could not get data for '{}', status code {}".format(doctor, req.status_code))
@@ -52,7 +52,7 @@ def monitor():
 
     # Compare the cur and prev data
     if prevData is None or date2freeIntervals != prevData:
-      info('free intervals have been changed:')
+      info('Doctor "{}", free intervals have been changed:'.format(doctor))
       info(jsonPrettyPrintStr(date2freeIntervals))
       # Send email with cur state
       msgBody = "{}\n".format(doctor)
