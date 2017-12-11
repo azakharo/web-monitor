@@ -7,10 +7,12 @@ import json
 import requests
 from mylogging import log, err, info
 
+
 # ======================================
 # Constants
 
 MY_DEBUG = True
+DEBUG_MON_URL = 'http://localhost:3000/db.json'
 
 MON_INTERVAL = 1 * 60  # in sec
 
@@ -26,50 +28,44 @@ DATA_DIR = dirname(abspath(__file__))
 #======================================
 
 
-################################################
-# Variable stuff
+def monitor():
+  cfgFile = open(CFG_PATH, "r")
+  config = json.loads(cfgFile.read())
+  cfgFile.close()
 
-DOCTOR_NAME = 'Chuvatkin'
-if MY_DEBUG:
-  MON_URL = 'http://localhost:3000/db.json'
-else:
-  MON_URL = 'https://152.is-mis.ru/pp/group/department_305/service/36/resource/214/planning/2017/11?_salt=1511505893507'
+  for doctorInfo in config["doctors"]:
+    # Request data
+    doctor = doctorInfo["name"].encode('UTF-8')
+    monUrl = doctorInfo["url"] if not MY_DEBUG else DEBUG_MON_URL
+    req = requests.get(monUrl, verify=False)  # don't verify SSL cert
+    if req.status_code != 200:
+      err("could not get data for '{}', status code {}".format(doctor, req.status_code))
+      return
+    rawData = req.json()
+    #log(json.dumps(rawData, sort_keys=True, indent=2, separators=(',', ': ')))
 
-# Variable stuff
-################################################
+    prevData = loadPrevData(doctor)
 
+    # Getting free intervals
+    date2freeIntervals = extractData(rawData)
+    # log(date2freeIntervals)
 
-def monitor(doctor, monUrl):
-  # Request data
-  req = requests.get(monUrl, verify=False)  # don't verify SSL cert
-  if req.status_code != 200:
-    err("could not get data for '{}', status code {}".format(doctor, req.status_code))
-    return
-  rawData = req.json()
-  #log(json.dumps(rawData, sort_keys=True, indent=2, separators=(',', ': ')))
+    # Compare the cur and prev data
+    if prevData is None or date2freeIntervals != prevData:
+      info('free intervals have been changed:')
+      info(jsonPrettyPrintStr(date2freeIntervals))
+      # Send email with cur state
+      msgBody = "{}\n".format(doctor)
+      if len(date2freeIntervals.keys()) > 0:
+        msgBody += "Свободное время приёма:\n"
+        for date in date2freeIntervals.keys():
+          msgBody += "{} число: {}\n".format(date, ', '.join(date2freeIntervals[date]))
+      else:
+        msgBody += "Пока всё занято :("
+      send_email(EMAIL_USER, EMAIL_PWD, EMAIL_TO, doctor, msgBody)
 
-  prevData = loadPrevData(doctor)
-
-  # Getting free intervals
-  date2freeIntervals = extractData(rawData)
-  # log(date2freeIntervals)
-
-  # Compare the cur and prev data
-  if prevData is None or date2freeIntervals != prevData:
-    info('free intervals have been changed:')
-    info(jsonPrettyPrintStr(date2freeIntervals))
-    # Send email with cur state
-    msgBody = "{}\n".format(doctor)
-    if len(date2freeIntervals.keys()) > 0:
-      msgBody += "Свободное время приёма:\n"
-      for date in date2freeIntervals.keys():
-        msgBody += "{} число: {}\n".format(date, ', '.join(date2freeIntervals[date]))
-    else:
-      msgBody += "Пока всё занято :("
-    send_email(EMAIL_USER, EMAIL_PWD, EMAIL_TO, doctor, msgBody)
-
-  # Save data
-  saveData(doctor, date2freeIntervals)
+    # Save data
+    saveData(doctor, date2freeIntervals)
 
 
 def getDataFilePath(doctor):
@@ -138,5 +134,5 @@ def send_email(user, pwd, recipient, subject, body):
 
 if __name__ == '__main__':
   while True:
-    monitor(DOCTOR_NAME, MON_URL)
+    monitor()
     time.sleep(MON_INTERVAL)
