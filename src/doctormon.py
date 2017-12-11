@@ -12,23 +12,20 @@ from mylogging import log, err, info
 
 MY_DEBUG = False
 
-MON_INTERVAL = 15 * 60 # in sec
-DOCTOR_NAME = 'Врач-акушер-гинеколог Скотарева И.А. (Пол-ка № 1, каб. 313)'
+MON_INTERVAL = 1 * 60 # in sec
+DOCTOR_NAME = 'Чуваткин'
 if MY_DEBUG:
     MON_URL = 'http://localhost:3000/db.json'
 else:
-    # детский кардиолог
-    #MON_URL = 'https://sarov.r-mis.ru/pp/group/department_298/service/27/resource/183/planning/2016/10?_salt=1475503090305'
-    # Врач-акушер-гинеколог Скотарева И.А. (Пол-ка № 1, каб. 313)
-    MON_URL =  'https://sarov.r-mis.ru/pp/group/department_303/service/34/resource/211/planning/2016/10?_salt=1475503090305'
+    MON_URL =  'https://152.is-mis.ru/pp/group/department_305/service/36/resource/214/planning/2017/11?_salt=1511505893507'
 PREV_DATA_FNAME = join(dirname(abspath(__file__)), "prev_data.json")
 
 # Email settings
 EMAIL_USER = "alexey.a.zakharov@gmail.com"
 EMAIL_PWD = "MyGmail6"
-#EMAIL_TO = "zangular@yandex.ru"
-EMAIL_TO = "pups1912@yandex.ru"
-EMAIL_SUBJ = "запись к гинекологу"
+EMAIL_TO = "zangular@yandex.ru"
+#EMAIL_TO = "pups1912@yandex.ru"
+EMAIL_SUBJ = "Чуваткин"
 
 #======================================
 
