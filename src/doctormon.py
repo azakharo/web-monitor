@@ -18,7 +18,7 @@ MON_INTERVAL = 1 * 60  # in sec
 
 # Email settings
 EMAIL_USER = "alexey.a.zakharov@gmail.com"
-EMAIL_PWD = "MyGmail6"
+EMAIL_PWD = "MyGmail7"
 EMAIL_TO = "zangular@yandex.ru"
 #EMAIL_TO = "pups1912@yandex.ru"
 
@@ -35,8 +35,8 @@ def monitor():
 
   for doctorInfo in config["doctors"]:
     # Request data
-    doctor = doctorInfo["name"].encode('UTF-8')
-    monUrl = doctorInfo["url"].encode('UTF-8') if not MY_DEBUG else DEBUG_MON_URL
+    doctor = doctorInfo["name"]
+    monUrl = doctorInfo["url"] if not MY_DEBUG else DEBUG_MON_URL
     req = requests.get(monUrl, verify=False)  # don't verify SSL cert
     if req.status_code != 200:
       err("could not get data for '{}', status code {}".format(doctor, req.status_code))
@@ -125,11 +125,12 @@ def send_email(user, pwd, recipient, subject, body):
     server.ehlo()
     server.starttls()
     server.login(gmail_user, gmail_pwd)
-    server.sendmail(FROM, TO, message)
+    server.sendmail(FROM, TO, message.encode('UTF-8'))
     server.close()
-    print 'successfully sent the mail'
-  except:
-    print "failed to send mail"
+    print('successfully sent the mail')
+  except Exception as ex:
+    print("failed to send mail")
+    print(ex)
 
 
 if __name__ == '__main__':
