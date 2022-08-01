@@ -99,7 +99,7 @@ def extractData(rawData):
       for interval in dateData['intervals']:
         if interval['free']:
           freeIntervals.append(interval['formattedDate'])
-      date2freeIntervals[unicode(dateData['date'])] = freeIntervals
+      date2freeIntervals[dateData['date']] = freeIntervals
   return date2freeIntervals
 
 
