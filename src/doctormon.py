@@ -17,9 +17,9 @@ DEBUG_MON_URL = 'http://localhost:3000/db.json'
 MON_INTERVAL = 1 * 60  # in sec
 
 # Email settings
-EMAIL_USER = "alexey.a.zakharov@gmail.com"
-EMAIL_PWD = "MyGmail7"
-EMAIL_TO = "zangular@yandex.ru"
+EMAIL_USER = "zangular@yandex.ru"
+EMAIL_PWD = "Lamaster5"
+EMAIL_TO = "alexey.a.zakharov@gmail.com"
 #EMAIL_TO = "pups1912@yandex.ru"
 
 CFG_PATH = join(dirname(abspath(__file__)), "config.json")
@@ -110,8 +110,6 @@ def jsonPrettyPrintStr(data):
 def send_email(user, pwd, recipient, subject, body):
   import smtplib
 
-  gmail_user = user
-  gmail_pwd = pwd
   FROM = user
   TO = recipient if type(recipient) is list else [recipient]
   SUBJECT = subject
@@ -121,10 +119,10 @@ def send_email(user, pwd, recipient, subject, body):
   message = """From: %s\nTo: %s\nSubject: %s\n\n%s
     """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
   try:
-    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server = smtplib.SMTP_SSL("smtp.yandex.ru", 465)
     server.ehlo()
-    server.starttls()
-    server.login(gmail_user, gmail_pwd)
+    # server.starttls()
+    server.login(user, pwd)
     server.sendmail(FROM, TO, message.encode('UTF-8'))
     server.close()
     print('successfully sent the mail')
