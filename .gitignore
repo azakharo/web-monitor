@@ -1,4 +1,2 @@
 .idea
 *.pyc
-src/prev_data.json
-venv
