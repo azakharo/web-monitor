@@ -27,8 +27,10 @@ DATA_DIR = dirname(abspath(__file__))
 
 #======================================
 
+prevData = None
 
 def monitor():
+  global prevData
   cfgFile = open(CFG_PATH, "r")
   config = json.loads(cfgFile.read())
   cfgFile.close()
@@ -44,16 +46,17 @@ def monitor():
     rawData = req.json()
     #log(json.dumps(rawData, sort_keys=True, indent=2, separators=(',', ': ')))
 
-    prevData = loadPrevData(doctor)
-
     # Getting free intervals
     date2freeIntervals = extractData(rawData)
     # log(date2freeIntervals)
 
+    areThereAnyFreeIntervals = (date2freeIntervals is not None) and len(date2freeIntervals.keys()) > 0
+
     # Compare the cur and prev data
     if prevData is None or date2freeIntervals != prevData:
-      info('Doctor "{}", free intervals have been changed:'.format(doctor))
-      info(jsonPrettyPrintStr(date2freeIntervals))
+      if areThereAnyFreeIntervals:
+        info('Doctor "{}", free intervals:'.format(doctor))
+        info(jsonPrettyPrintStr(date2freeIntervals))
       # Send email with cur state
       msgBody = "{}\n".format(doctor)
       if len(date2freeIntervals.keys()) > 0:
@@ -65,30 +68,7 @@ def monitor():
       send_email(EMAIL_USER, EMAIL_PWD, EMAIL_TO, doctor, msgBody)
 
     # Save data
-    saveData(doctor, date2freeIntervals)
-
-
-def getDataFilePath(doctor):
-  return join(DATA_DIR, doctor) + '.json'
-
-
-def loadPrevData(doctor):
-  fname = getDataFilePath(doctor)
-  if not exists(fname):
-    open(fname, 'w').close()
-    prevData = None
-  else:
-    f = open(fname, "r")
-    prevData = json.loads(f.read())
-    f.close()
-  return prevData
-
-
-def saveData(doctor, data):
-  fname = getDataFilePath(doctor)
-  f = open(fname, "w")
-  f.write(jsonPrettyPrintStr(data))
-  f.close()
+    prevData = date2freeIntervals
 
 
 def extractData(rawData):
